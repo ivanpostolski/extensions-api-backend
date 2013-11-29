@@ -16,8 +16,14 @@ public class SfdcResource {
 
     @Path("/config")
     @Produces(MediaType.APPLICATION_JSON)
-    public ConfigurationResource get(){
+    public ConfigurationResource config(){
         return new ConfigurationResource(extension.configurations().get(0));
+    }
+
+    @Path("/oauth")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ConfigurationResource oauth(){
+        return new ConfigurationResource(extension.configurations().get(1));
     }
 
 
