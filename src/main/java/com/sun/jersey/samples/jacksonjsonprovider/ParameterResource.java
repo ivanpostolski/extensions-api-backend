@@ -20,11 +20,12 @@ public class ParameterResource {
 
     Boolean isSensitive;
 
-    Type type;
-
-    public Type getReturnType() {
+    public Type getType() {
         return type;
     }
+
+    Type type;
+
 
     public String getName() {
         return name;
