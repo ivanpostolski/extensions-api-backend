@@ -8,7 +8,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.File;
 
 
 @Path("/sfdc")
@@ -20,6 +22,14 @@ public class SfdcResource {
     @Produces(value = "application/json")
     public MuleExtensionResource getConfigs(@Context UriInfo ui){
            return new MuleExtensionResource(extension);
+    }
+
+    @GET
+    @Path("/index")
+    @Produces(MediaType.TEXT_HTML)
+    public Response index(){
+        File html = null;
+        return Response.ok(html,"text/html").build();
     }
 
     @Path("/config")
