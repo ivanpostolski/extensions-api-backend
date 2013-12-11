@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SFDC: online documentation</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/prism.css">
+  <link rel="stylesheet" href="css/chosen.css">
+  <link rel="stylesheet" href="css/bootstrap.css" media="screen">
+  <style type="text/css" media="all">
+    /* fix rtl for demo */
+    .chosen-rtl .chosen-drop { left: -9000px; }
+  </style>
+
+  <script src="js/jquery.js" type="text/javascript"></script>
+
+  <script src="js/linq.js" type="text/javascript" ></script>
+  <script src="js/chosen.jquery.js" type="text/javascript"></script>
+  <script src="js/prism.js" type="text/javascript" charset="utf-8"></script>
+
+  <script src="js/bootstrap.js"></script>
+
+  <script type="text/javascript" src="js/noty/packaged/jquery.noty.packaged.min.js"></script>
+
+</head>
+<body>
+  <form>
+    <div id="container">
+      <div id="content">
+        <header><h1>SFDC</h1></header>
+        <p class>lorem ..</p>
+        <!-- CONFIGURATION -->
+        <h2><a name="standard-select" class="anchor" href="#standard-select">Select a configuration</a></h2>
+        <div class="configurationDescription"></div>
+        <div class="side-by-side clearfix">
+          <div>
+            <select  data-placeholder="Choose a configuration..." class="chosen-select-configurations configurations" style="width:230px;" tabindex="2">
+              <option value=""></option>
+            </select>
+          </div>
+            <div class="col-md-4">
+            <button id="singlebutton" name="singlebutton" class="btn btn-primary configuration-modal-button" data-toggle="modal">Load config values</button>
+          </div>
+        </div>
+        
+        <!-- OPERATION -->
+        <h2><a name="standard-select" class="anchor" href="#standard-select">Select an operation</a></h2>
+        <div class="operationDescription"></div>
+        <div class="side-by-side clearfix">
+          <div>
+            <select  data-placeholder="Choose an operation..." class="chosen-select-operations operations" style="width:230px;" tabindex="2">
+              <option value=""></option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <button id="singlebutton2" name="singlebutton2" class="btn btn-primary operation-modal-button" data-toggle="modal">Load operation values</button>
+          </div>
+        </div> 
+
+
+        <!-- CONFIGURATION MODAL -->
+        <div class="modal fade" id="modalConfiguration" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content" style="width:700px">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="modalTitleConfiguration">Configuration title</h4>
+              </div>
+              <div class="modal-body modal-body-configuration">
+              </div>
+              <br>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary-configurations">Create executable configuration</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <!-- OPERATION MODAL -->
+        <div class="modal fade" id="modalOperation" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content" style="width:700px">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="modalTitleOperation">Operation title</h4>
+              </div>
+              <div class="modal-body modal-body-operation">
+              </div>
+              <br>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary-operation">Create and run operation</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+      </div> <!-- content -->
+    </div> <!-- container -->
+  </form>
+
+<script type="text/javascript">
+  //starting point...
+  $(function(){
+    retrieveConfigs();
+    addListeners();
+  });
+
+  //global variables
+  var _ResourceURL, _JSON;
+  _JSON = "";
+  _ResourceURL = "http://localhost:8080/sfdc/"
+
+
+  //Chosen library
+  function drawSelectsWithChosen(){
+    var config, selector;
+    config = {
+      '.chosen-select-configurations'   : {},
+      '.chosen-select-operations'       : {} 
+    }
+    for (selector in config) {
+      $(selector).chosen(config[selector]);
+    }
+  };
+
+  function redrawSelectWithChosen(selector){
+    $(selector).val('').trigger("chosen:updated");
+  };
+ 
+  //linq library
+  function getNames(jsonArray){
+    return Enumerable.From(jsonArray).Select("$.name").ToArray();
+  }
+
+  //drawing modals
+  function drawParameterConfigurationModal(selector, parameter){
+    var name, type, optional, sensitive, defaultExpression, inputType, generatedHtml;
+    name=parameter.name;
+    type=parameter.type;
+    optional=parameter.optional;
+    sensitive=parameter.sensitive;
+    defaultExpression = parameter.defaultExpression;
+
+
+    inputType = ( sensitive ) ? "password" : "text";
+    mandatory = ( optional ) ? "" : "<span style='color:red'> (*)</span>";
+
+    generatedHtml = '<br><div class="form-group">'; 
+    generatedHtml += '  <label class="col-md-4 control-label configuration-label" for="textinput" style="width:230px;">'+ name + mandatory +'</label>  ';
+    generatedHtml += '  <div class="col-md-4">';
+    generatedHtml += '    <input id="textinput" name="textinput" placeholder="'+ defaultExpression +'" class="form-control input-md configuration-input" type="'+ inputType +'" style="width:400px;">';
+    generatedHtml += '  </div>';
+    generatedHtml += '</div>';
+
+    selector.append(generatedHtml);
+  };
+
+  function drawConfigurationModal(json, configuration){
+    var selector = $(".modal-body-configuration");
+    selector.empty();
+    $("#modalTitleConfiguration").text("Editing values for '"+ configuration +"' configuration:");
+    $.each(json.parameters, function( index, value ) {
+      drawParameterConfigurationModal(selector, value);
+    }); 
+  }
+
+  function drawOperationModal(json){
+    var selector = $(".modal-body-operation");
+    selector.empty();
+    $("#modalTitleOperation").text("Editing values for '"+ json.name +"' operation:");
+    $.each(json.parameters, function( index, value ) {
+      drawParameterConfigurationModal(selector, value);
+    }); 
+  }
+
+  function drawDescription(selector, description){
+    selector.empty();
+    selector.append(description);
+  }
+
+  function reDrawSelect(selector, arrayOfOptions ){
+    selector.empty();
+    selector.append("<option value=''> </option>");
+    $.each(arrayOfOptions, function( index, value ) {
+      selector.append("<option value='"+ value +"'> "+ value +" </option>");
+    });    
+  };
+
+  function populateConfigs(json){
+    selector_configurations = $(".configurations");
+    reDrawSelect(selector_configurations, getNames(json.configurations) );
+
+    addConfigurationListener(selector_configurations);
+    drawSelectsWithChosen();
+  };
+
+  function populateOperations(json){
+    selector_operations = $(".operations");
+    reDrawSelect(selector_operations, getNames(json.operations) );
+
+    redrawSelectWithChosen(selector_operations);
+    addOperationListener(selector_operations);
+
+  };
+
+  //API
+  function retrieveConfigs(){
+    $.getJSON( _ResourceURL, function(data) {
+      populateConfigs(data);
+    }) 
+    .fail(function() {
+      console.log( "error" );
+    }); 
+  };
+
+  function retrieveOperations(configuration){
+    $.getJSON( _ResourceURL + configuration, function(data) {
+        drawConfigurationModal(data, configuration);
+        drawDescription($(".configurationDescription"), data.description);
+        populateOperations(data);
+        _JSON = data; //TODO .. there should be a way to retrieve information regarding just an operation...
+    }) 
+    .fail(function() {
+      console.log( "error" );
+    }); 
+  };
+
+  //add listeners
+  function addButtonModalListener(){
+    $(".configuration-modal-button").click(function(){
+      if ($(".configurations").val() === ""){
+        noty({text: 'Please, select a configuration', timeout:3000, type: 'warning'});
+      } else {
+        $("#modalConfiguration").modal('show');
+      };
+    });
+
+    $(".operation-modal-button").click(function(){
+      if ($(".operations").val() === ""){
+        noty({text: 'Please, select an operation', timeout:3000, type: 'warning'});
+      } else {
+        $("#modalOperation").modal('show');
+      };
+    });
+
+
+  }
+  function addConfigurationListener(aSelectConfigurations){
+    aSelectConfigurations.change( function () {
+      retrieveOperations(aSelectConfigurations.val());
+    });
+  };
+
+  function addOperationListener(aSelectOperations){
+    aSelectOperations.change( function () {
+      var operation;
+      operation = Enumerable.From(_JSON.operations).Where("$.name == '" + aSelectOperations.val() +"'").First();
+
+      drawDescription($(".operationDescription"), operation.description);
+      drawOperationModal(operation);
+      console.log ("selected operation:" + operation.name);
+    });
+  };
+
+  function addModalConfigurationModalListener(){
+    $(".btn-primary-configurations").click(function(){
+      var configurationLabelsSelector, configurationInputsSelector, configurationParameters;
+
+      configurationLabelsSelector = $(".configuration-label");
+      configurationInputsSelector = $(".configuration-input");
+      configurationParameters = '';
+
+      for (var i=0;i<configurationInputsSelector.length;i++) {
+        if (configurationInputsSelector[i].value !== ""){
+          configurationParameters += '"' + configurationLabelsSelector[i].firstChild.data +'":"' + configurationInputsSelector[i].value + '",';
+        }
+      };
+      if (configurationParameters.length > 0){//removing last comma
+        configurationParameters = configurationParameters.substring(0, configurationParameters.length - 1);
+      };
+      configurationParameters = '{' + configurationParameters + '}';
+      
+      $("#modalConfiguration").modal('hide');
+      // TODO not working because of cors.... :(
+      $.ajax({
+          type: "POST",
+          url: _ResourceURL + 'config',
+          dataType: 'json',
+          async: false,
+          data: JSON.stringify(JSON.parse(configurationParameters)),
+          success: function (data, textStatus, jqXHR) {
+            alert("ID:" + data); 
+          }
+      });
+    });
+  };
+
+  function addListeners(){
+    addModalConfigurationModalListener();
+    addButtonModalListener();
+  };
+
+
+
+
+  </script>  
+</body>
+</html>
