@@ -33,7 +33,7 @@
   }
 
   //drawing modals
-  function drawParameterConfigurationModal(selector, parameter){
+  function drawParameterConfigurationModal(selector, parameter, scope){
     var name, type, optional, sensitive, defaultExpression, inputType, generatedHtml;
     var hackishDefaultValue = "";
     name=parameter.name;
@@ -52,9 +52,9 @@
     mandatory = ( optional ) ? "" : "<span style='color:red'> (*)</span>";
 
     generatedHtml = '<br><div class="form-group">';
-    generatedHtml += '  <label class="col-md-4 control-label configuration-label" for="textinput" style="width:230px;">'+ name + mandatory +'</label>  ';
+    generatedHtml += '  <label class="col-md-4 control-label '+ scope +'-label" for="textinput" style="width:230px;">'+ name + mandatory +'</label>  ';
     generatedHtml += '  <div class="col-md-4">';
-    generatedHtml += '    <input id="textinput" name="textinput" ' + hackishDefaultValue + ' placeholder="'+ defaultExpression +'" class="form-control input-md configuration-input" type="'+ inputType +'" style="width:400px;">';
+    generatedHtml += '    <input id="textinput" name="textinput" ' + hackishDefaultValue + ' placeholder="'+ defaultExpression +'" class="form-control input-md '+ scope +'-input" type="'+ inputType +'" style="width:400px;">';
     generatedHtml += '  </div>';
     generatedHtml += '</div>';
 
@@ -66,7 +66,7 @@
     selector.empty();
     $("#modalTitleConfiguration").text("Editing values for '"+ configuration +"' configuration:");
     $.each(json.parameters, function( index, value ) {
-      drawParameterConfigurationModal(selector, value);
+      drawParameterConfigurationModal(selector, value, "configuration");
     });
   }
 
@@ -75,7 +75,7 @@
     selector.empty();
     $("#modalTitleOperation").text("Editing values for '"+ json.name +"' operation:");
     $.each(json.parameters, function( index, value ) {
-      drawParameterConfigurationModal(selector, value);
+      drawParameterConfigurationModal(selector, value, "operation");
     });
   }
 
