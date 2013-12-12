@@ -46,6 +46,8 @@
     if( name =="username"){ hackishDefaultValue = " value='sap.dev@mulesoft.com.sap' ";} ;
     if( name =="password"){ hackishDefaultValue = " value='Muleftwin4' ";} ;
     if( name =="securityToken"){ hackishDefaultValue = " value='fKESXfSAj43qR6wfxwxotw9Uc' ";} ;
+    if( name =="type"){ hackishDefaultValue = " value='ACCOUNT' ";} ;
+    if( name =="object"){ hackishDefaultValue = " value=' {\"name\":\"ble\"} ' ";} ;
 
 
     inputType = ( sensitive ) ? "password" : "text";
@@ -191,17 +193,13 @@
       $.ajax({
           type: "POST",
           url: _ResourceURL + $(".configurations").val(),
-//          headers: {
-//                  'Accept': 'application/json',
-//                  'Content-Type': 'application/json'
-//              },
           dataType: 'json',
           contentType: 'application/json',
           async: false,
           data: JSON.stringify(JSON.parse(configurationParameters)),
           success: function (data, textStatus, jqXHR) {
             _ConfigurationId = data;
-            //alert("ID:" + data);
+            console.log("Configuration id:" + _ConfigurationId);
           }
       });
     });
@@ -221,7 +219,15 @@
 
         for (var i=0;i<configurationInputsSelector.length;i++) {
           if (configurationInputsSelector[i].value !== ""){
-            operationParameters += '"' + configurationLabelsSelector[i].firstChild.data +'":"' + configurationInputsSelector[i].value + '",';
+            var value ='"' + configurationInputsSelector[i].value + '"';
+            try {
+                value = JSON.stringify($.parseJSON(configurationInputsSelector[i].value));
+            } catch (e) {
+                // not json
+            }
+
+            operationParameters += '"' + configurationLabelsSelector[i].firstChild.data +'": ' + value + ',';
+//            operationParameters += '"' + configurationLabelsSelector[i].firstChild.data +'":"' + configurationInputsSelector[i].value + '",';
           }
         };
         if (operationParameters.length > 0){//removing last comma
@@ -239,7 +245,8 @@
             async: false,
             data: JSON.stringify(JSON.parse(operationParameters)),
             success: function (data, textStatus, jqXHR) {
-              alert("Result:" + data);
+              console.log("Operation status:" + data.status);
+              console.log("Operation status:" + data.status);
             }
         });
       });

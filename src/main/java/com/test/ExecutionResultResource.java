@@ -15,5 +15,9 @@ public class ExecutionResultResource {
         return status;
     }
 
+    public ExecutionResult getResult() {
+        return result;
+    }
+
     public ExecutionResult.Status status;
 }
