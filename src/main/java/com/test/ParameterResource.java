@@ -11,15 +11,13 @@ public class ParameterResource {
         this.name = parameter.name();
         this.isOptional = parameter.isOptional();
         this.isSensitive = parameter.isSensitive();
-        this.type = parameter.type().getType();
         if (parameter.defaultExpression().isPresent()){
             defaultExpression = parameter.defaultExpression().get();
         }else {
             defaultExpression = "";
         }
+        this.type = parameter.type().getRawType().getName();
     }
-
-    Type type;
 
     String name;
 
@@ -29,7 +27,9 @@ public class ParameterResource {
 
     String defaultExpression;
 
-    public Type getType() {
+    String type;
+    
+    public String getType() {
         return type;
     }
 
