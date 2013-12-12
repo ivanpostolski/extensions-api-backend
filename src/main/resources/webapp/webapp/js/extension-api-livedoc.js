@@ -5,8 +5,9 @@
   });
 
   //global variables
-  var _ResourceURL, _JSON;
+  var _ResourceURL, _JSON, _ConfigurationId;
   _JSON = "";
+  _ConfigurationId = "";
   _ResourceURL = "http://localhost:8080/api/sfdc/"
 
 
@@ -34,11 +35,17 @@
   //drawing modals
   function drawParameterConfigurationModal(selector, parameter){
     var name, type, optional, sensitive, defaultExpression, inputType, generatedHtml;
+    var hackishDefaultValue = "";
     name=parameter.name;
     type=parameter.type;
     optional=parameter.optional;
     sensitive=parameter.sensitive;
     defaultExpression = parameter.defaultExpression;
+
+    //TODO remove this later...
+    if( name =="username"){ hackishDefaultValue = " value='sap.dev@mulesoft.com.sap' ";} ;
+    if( name =="password"){ hackishDefaultValue = " value='Muleftwin4' ";} ;
+    if( name =="securityToken"){ hackishDefaultValue = " value='fKESXfSAj43qR6wfxwxotw9Uc' ";} ;
 
 
     inputType = ( sensitive ) ? "password" : "text";
@@ -47,7 +54,7 @@
     generatedHtml = '<br><div class="form-group">';
     generatedHtml += '  <label class="col-md-4 control-label configuration-label" for="textinput" style="width:230px;">'+ name + mandatory +'</label>  ';
     generatedHtml += '  <div class="col-md-4">';
-    generatedHtml += '    <input id="textinput" name="textinput" placeholder="'+ defaultExpression +'" class="form-control input-md configuration-input" type="'+ inputType +'" style="width:400px;">';
+    generatedHtml += '    <input id="textinput" name="textinput" ' + hackishDefaultValue + ' placeholder="'+ defaultExpression +'" class="form-control input-md configuration-input" type="'+ inputType +'" style="width:400px;">';
     generatedHtml += '  </div>';
     generatedHtml += '</div>';
 
@@ -162,7 +169,7 @@
   };
 
   function addModalConfigurationModalListener(){
-    $(".btn-primary-configurations").click(function(){
+    $(".btn-primary-configuration").click(function(){
       var configurationLabelsSelector, configurationInputsSelector, configurationParameters;
 
       configurationLabelsSelector = $(".configuration-label");
@@ -183,19 +190,64 @@
       // TODO not working because of cors.... :(
       $.ajax({
           type: "POST",
-          url: _ResourceURL + 'config',
+          url: _ResourceURL + $(".configurations").val(),
+//          headers: {
+//                  'Accept': 'application/json',
+//                  'Content-Type': 'application/json'
+//              },
           dataType: 'json',
+          contentType: 'application/json',
           async: false,
           data: JSON.stringify(JSON.parse(configurationParameters)),
           success: function (data, textStatus, jqXHR) {
-            alert("ID:" + data);
+            _ConfigurationId = data;
+            //alert("ID:" + data);
           }
       });
     });
   };
 
+  function addModalOperationModalListener(){
+      $(".btn-primary-operation").click(function(){
+        var configurationLabelsSelector, configurationInputsSelector, operationParameters;
+
+        configurationLabelsSelector = $(".operation-label");
+        configurationInputsSelector = $(".operation-input");
+        if(_ConfigurationId == ""){
+            noty({text: 'There is (yet) no configuration available, please, load a configuration first', timeout:3000, type: 'warning'});
+            return;
+        }
+        operationParameters = '"id":"' + _ConfigurationId + '",';
+
+        for (var i=0;i<configurationInputsSelector.length;i++) {
+          if (configurationInputsSelector[i].value !== ""){
+            operationParameters += '"' + configurationLabelsSelector[i].firstChild.data +'":"' + configurationInputsSelector[i].value + '",';
+          }
+        };
+        if (operationParameters.length > 0){//removing last comma
+          operationParameters = operationParameters.substring(0, operationParameters.length - 1);
+        };
+        operationParameters = '{' + operationParameters + '}';
+        console.log("Operations json:" + operationParameters);
+        $("#modalConfiguration").modal('hide');
+        // TODO not working because of cors.... :(
+        $.ajax({
+            type: "POST",
+            url: _ResourceURL + $(".configurations").val() + "/" + $(".operations").val(),
+            dataType: 'json',
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(JSON.parse(operationParameters)),
+            success: function (data, textStatus, jqXHR) {
+              alert("Result:" + data);
+            }
+        });
+      });
+    };
+
   function addListeners(){
     addModalConfigurationModalListener();
+    addModalOperationModalListener();
     addButtonModalListener();
   };
 
