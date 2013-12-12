@@ -10,7 +10,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,7 +48,11 @@ public class ExecutableOperationResource {
 
                 if (form.get(parameter) instanceof Object[]) {
                     //change it to list
-                    builder.addParameter(parameter, Arrays.asList(form.get(parameter)));
+                    List<Object> list = new ArrayList<Object>();
+                    for(int i=0; i < ((Object[]) form.get(parameter)).length; i++) {
+                        list.add(((Object[]) form.get(parameter))[i]);
+                    }
+                    builder.addParameter(parameter, list);
                 } else {
                     builder.addParameter(parameter,form.get(parameter));
                 }
