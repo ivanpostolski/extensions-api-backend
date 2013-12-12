@@ -10,6 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -41,7 +42,16 @@ public class ExecutableOperationResource {
 
         ExecutableOperationBuilder builder = executableConfigurations.get(form.get("id").toString()).operationBuilder(operationName);
         for (String parameter: form.keySet()) {
-            if (!"id".equals(parameter)) builder.addParameter(parameter,form.get(parameter));
+            if (!"id".equals(parameter)){
+
+                if (form.get(parameter) instanceof Object[]) {
+                    //change it to list
+                    builder.addParameter(parameter, Arrays.asList(form.get(parameter)));
+                } else {
+                    builder.addParameter(parameter,form.get(parameter));
+                }
+            }
+
 
         }
         ExecutableOperation executableOperation = builder.build();
