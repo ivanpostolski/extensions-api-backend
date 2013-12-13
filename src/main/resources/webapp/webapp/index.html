@@ -2,27 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <link rel="icon" href="https://www.salesforce.com/favicon.ico" type="image/x-icon">
   <title>SFDC: online documentation</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/prism.css">
   <link rel="stylesheet" href="css/chosen.css">
   <link rel="stylesheet" href="css/bootstrap.css" media="screen">
-  <style type="text/css" media="all">
-    /* fix rtl for demo */
-    .chosen-rtl .chosen-drop { left: -9000px; }
-  </style>
+  <link rel="stylesheet" href="css/extension-api-livedoc.css">
+
 
   <script src="js/jquery.js" type="text/javascript"></script>
-
   <script src="js/linq.js" type="text/javascript" ></script>
   <script src="js/chosen.jquery.js" type="text/javascript"></script>
   <script src="js/prism.js" type="text/javascript" charset="utf-8"></script>
-
   <script src="js/bootstrap.js"></script>
-
   <script src="js/noty/packaged/jquery.noty.packaged.min.js" type="text/javascript" ></script>
-  <script src="js/extension-api-livedoc.js" type="text/javascript" ></script>
 
+  <script src="js/extension-api-livedoc.js" type="text/javascript" ></script>
 
 </head>
 <body>
@@ -30,9 +26,9 @@
     <div id="container">
       <div id="content">
         <header><h1>Salesforce Connector</h1></header>
-        <!--<p class>lorem ..</p>-->
+
         <!-- CONFIGURATION -->
-        <h2><a name="standard-select" class="anchor" href="#standard-select">Select a configuration</a></h2>
+        <h2><a name="standard-select-configuration" class="anchor" href="#standard-select">Select a configuration</a></h2>
         <div class="configurationDescription"></div>
         <div class="side-by-side clearfix">
           <div>
@@ -46,7 +42,7 @@
         </div>
         
         <!-- OPERATION -->
-        <h2><a name="standard-select" class="anchor" href="#standard-select">Select an operation</a></h2>
+        <h2><a name="standard-select-operation" class="anchor" href="#standard-select">Select an operation</a></h2>
         <div class="operationDescription"></div>
         <div class="side-by-side clearfix">
           <div>
@@ -98,8 +94,30 @@
           </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
 
+          <!-- RESULT OPERATION MODAL -->
+          <div class="modal fade" id="modalResult" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                  <div class="modal-content" style="width:700px">
+                      <div class="modal-header" id="modal-header-result">
+                          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                          <h4 class="modal-title" id="modalTitleResult">Result title</h4>
+                      </div>
+                      <div class="modal-body modal-body-result">
+                      </div>
+                      <br>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                      </div>
+                  </div><!-- /.modal-content -->
+              </div><!-- /.modal-dialog -->
+          </div><!-- /.modal -->
+
+
+          <div class="modalAjax"><!-- Place at bottom of page --></div>
+
       </div> <!-- content -->
     </div> <!-- container -->
+
   </form>
 
 </body>

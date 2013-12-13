@@ -16,8 +16,9 @@
     var config, selector;
     config = {
       '.chosen-select-configurations'   : {},
-      '.chosen-select-operations'       : {}
-    }
+      '.chosen-select-operations'       : {},
+      '.chosen-select-types'       : {}
+        }
     for (selector in config) {
       $(selector).chosen(config[selector]);
     }
@@ -31,6 +32,25 @@
   function getNames(jsonArray){
     return Enumerable.From(jsonArray).Select("$.name").ToArray();
   }
+
+
+  function unCamel(str) {
+    var token=str.match(/[A-Z]?[a-z]+/g)
+    return token.join(" ");
+  }
+
+  function capitalizeFirstChar(str){
+      return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function camel(str){
+    return jQuery.camelCase(str.replace(/\s/g, '-'))
+  }
+
+  function uncapitalizeFirstChar(str){
+      return str.charAt(0).toLowerCase() + str.slice(1);
+  }
+
 
   //drawing modals
   function drawParameterConfigurationModal(selector, parameter, scope){
@@ -54,9 +74,23 @@
     mandatory = ( optional ) ? "" : "<span style='color:red'> (*)</span>";
 
     generatedHtml = '<br><div class="form-group">';
-    generatedHtml += '  <label class="col-md-4 control-label '+ scope +'-label" for="textinput" style="width:230px;">'+ name + mandatory +'</label>  ';
+    //generatedHtml += '  <label class="col-md-4 control-label '+ scope +'-label" for="textinput" style="width:230px;">'+ name + mandatory +'</label>  ';
+    generatedHtml += '  <label class="col-md-4 control-label '+ scope +'-label" for="textinput" style="width:260px;">'+ capitalizeFirstChar(unCamel(name)) + mandatory +'</label>  ';
     generatedHtml += '  <div class="col-md-4">';
-    generatedHtml += '    <input id="textinput" name="textinput" ' + hackishDefaultValue + ' placeholder="'+ defaultExpression +'" class="form-control input-md '+ scope +'-input" type="'+ inputType +'" style="width:400px;">';
+
+    //TODO remove after simulation of datasense :)
+    if ( name == "type"){
+       var types=new Array("ACCOUNT","USER","...Me", "da", "fiaca", "buscar", "buscar", "todos", "los", "tipos", "que", "hay", "=^]");
+
+        generatedHtml += '<div><select  data-placeholder="Choose a type..." class="chosen-select-types types" style="width:230px;" tabindex="2">';
+        generatedHtml += '<option value=""> </option>';
+        $.each(types, function( index, value ) {
+          generatedHtml += "<option value='"+ value +"'> "+ value +" </option>";
+        });
+        generatedHtml += '</select></div>';
+    }else {
+      generatedHtml += '    <input id="'+ name +'" name="textinput" ' + hackishDefaultValue + ' placeholder="'+ defaultExpression +'" class="form-control input-md '+ scope +'-input" type="'+ inputType +'" style="width:400px;">';
+    }
     generatedHtml += '  </div>';
     generatedHtml += '</div>';
 
@@ -147,7 +181,12 @@
       if ($(".operations").val() === ""){
         noty({text: 'Please, select an operation', timeout:3000, type: 'warning'});
       } else {
+        $('#modalOperation').on('shown.bs.modal', function (e) {
+             $(".chosen-select-types").chosen({});
+        });
+
         $("#modalOperation").modal('show');
+
       };
     });
 
@@ -180,7 +219,7 @@
 
       for (var i=0;i<configurationInputsSelector.length;i++) {
         if (configurationInputsSelector[i].value !== ""){
-          configurationParameters += '"' + configurationLabelsSelector[i].firstChild.data +'":"' + configurationInputsSelector[i].value + '",';
+          configurationParameters += '"' + configurationInputsSelector[i].getAttribute('id') +'":"' + configurationInputsSelector[i].value + '",';
         }
       };
       if (configurationParameters.length > 0){//removing last comma
@@ -224,38 +263,70 @@
                 value = JSON.stringify($.parseJSON(configurationInputsSelector[i].value));
             } catch (e) {
                 // not json
-            }
-
-            operationParameters += '"' + configurationLabelsSelector[i].firstChild.data +'": ' + value + ',';
-//            operationParameters += '"' + configurationLabelsSelector[i].firstChild.data +'":"' + configurationInputsSelector[i].value + '",';
+            };
+            operationParameters += '"' + configurationInputsSelector[i].getAttribute('id') +'": ' + value + ',';
           }
         };
+        //TODO hack to simulate datasense.....
+        if ($(".types").val() !== ""){
+            operationParameters += '"type":"' + $(".types").val() + '",';
+        };
+
         if (operationParameters.length > 0){//removing last comma
           operationParameters = operationParameters.substring(0, operationParameters.length - 1);
         };
         operationParameters = '{' + operationParameters + '}';
         console.log("Operations json:" + operationParameters);
-        $("#modalConfiguration").modal('hide');
-        // TODO not working because of cors.... :(
+        $("#modalOperation").modal('hide');
+        $('body').addClass("loading")
         $.ajax({
             type: "POST",
             url: _ResourceURL + $(".configurations").val() + "/" + $(".operations").val(),
             dataType: 'json',
             contentType: 'application/json',
-            async: false,
             data: JSON.stringify(JSON.parse(operationParameters)),
             success: function (data, textStatus, jqXHR) {
-              console.log("Operation status:" + data.status);
-              console.log("Operation status:" + data.status);
+              $('body').removeClass("loading")
+              drawResultModal(data);
             }
         });
       });
     };
+
+
+    function drawResultModal(json){
+      var selector, content, bgColor;
+
+      console.log("Operation status:" + json.status);
+      console.log("Operation result:" + json.result);
+      console.log("Operation exception:" + json.exception);
+
+
+      selector = $(".modal-body-result");
+      selector.empty();
+      $("#modalTitleResult").text("Result of the operation: [" + json.status.toUpperCase() + "]");
+
+
+      if (json.status == "SUCCESS"){
+        content = "<strong>Payload: <br>" +  json.result + "</strong>";
+        bgColor = 'forestgreen';
+      } else{
+        content = json.exception;
+        bgColor = 'orangered';
+      }
+      $("#modal-header-result").css('background-color', bgColor);
+
+      selector.append(content);
+
+      $("#modalResult").modal('show');
+    }
 
   function addListeners(){
     addModalConfigurationModalListener();
     addModalOperationModalListener();
     addButtonModalListener();
   };
+
+
 
 
